@@ -7,7 +7,7 @@ from nltk.tokenize import word_tokenize
 
 from flask import Flask
 from flask import render_template, request, jsonify
-from plotly.graph_objs import Bar
+from plotly.graph_objs import Bar, Pie, Histogram
 from sklearn.externals import joblib
 from sqlalchemy import create_engine
 
@@ -41,19 +41,37 @@ def index():
     # extract data needed for visuals
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
+    
+    #chart 1 data
     genre_names = list(genre_counts.index)
+    genre_values = df.groupby('genre').count()['message']
+    
+    #chart 2 data
+    disaster_responses = pd.DataFrame(df.drop(['id','message','original','genre'], axis=1).sum(axis=0)).reset_index()
+    disaster_responses.rename(columns={'index':'disaster_response', 0:'count'}, inplace=True)
+    disaster_responses.sort_values(by=['count'], ascending=False, inplace=True)
+    disaster_categories = disaster_responses['disaster_response']
+    disaster_categories_dis = disaster_responses['count']
+    
+    #chart 3 data
+    disaster_responses_by_genre = df.drop(['id','message'], axis=1).groupby(['genre']).sum(axis=0).reset_index()
+    y_direct = disaster_responses_by_genre.loc[0][1:].values
+    y_news = disaster_responses_by_genre.loc[1][1:].values
+    y_social = disaster_responses_by_genre.loc[2][1:].values
+    
+    #chart 4 data
+    no_cat_per_sms = df.drop(['id'], axis=1).sum(axis=1)
 
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
         {
             'data': [
-                Bar(
-                    x=genre_names,
-                    y=genre_counts
-                )
+                Pie(
+                    labels=genre_names,
+                    values=genre_counts
+                )   
             ],
-
             'layout': {
                 'title': 'Distribution of Message Genres',
                 'yaxis': {
@@ -61,6 +79,61 @@ def index():
                 },
                 'xaxis': {
                     'title': "Genre"
+                }
+            }
+        },
+        {
+            'data': [
+                Bar(
+                    x=disaster_categories,
+                    y=disaster_categories_dis,
+                )   
+            ],       
+            'layout': {
+                'title': 'Distribution of Disaster Categories',
+                'yaxis': {
+                    'title': "Count"
+                }
+            }
+        },
+        {
+            'data': [
+                Bar(
+                    name='direct',
+                    x=disaster_categories,
+                    y=y_direct
+                ),
+                Bar(
+                    name='news',
+                    x=disaster_categories,
+                    y=y_news
+                ),
+                Bar(
+                    name='social',
+                    x=disaster_categories,
+                    y=y_social
+                )
+            ],
+            'layout': {
+                'title': 'Distribution of Disaster Categories by Genre',
+                'yaxis': {
+                    'title': "Count"
+                }
+            }
+        },
+        {
+            'data': [
+                Histogram(
+                    x=no_cat_per_sms,
+                )   
+            ],
+            'layout': {
+                'title': 'Number of Disaster Categories per Message',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Number of disaster categories per message"
                 }
             }
         }
