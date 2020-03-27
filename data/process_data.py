@@ -8,6 +8,16 @@ import pandas as pd
 import numpy as np
 
 def load_data(messages_filepath, categories_filepath):
+    """Load data: load disaster messages and disaster categories csv files'
+
+    Parameters:
+    messages_filepath (csv file): disaster messages csv file filepath
+    categories_filepath (csv file): disaster categories csv filepath
+
+    Returns:
+    df: cleaned dataframe
+
+   """
     messages = pd.read_csv(messages_filepath) # load csv file from message_filepath
     categories = pd.read_csv(categories_filepath) # load csv file from categories_filepath
     df = pd.merge(messages, categories, on='id') # merge datasets
@@ -15,7 +25,17 @@ def load_data(messages_filepath, categories_filepath):
 
 
 def clean_data(df):
+    """Clean data: split categories into separate columns, convert each column
+    value to just number 0/1, replace categories columns in df with new columns,
+    remove duplicates, and other cleaning
 
+    Parameters:
+    df (dataframe): raw dataframe loaded from load_data() function
+
+    Returns:
+    df: cleaned dataframe
+
+   """
     ## 1. SPLIT CATEGORIES INTO SEPARATE CATEGORY COLUMNS.
 
     categories = df.categories.str.split(';', expand=True) # create a dataframe of the 36 individual category columns
@@ -43,17 +63,29 @@ def clean_data(df):
 
     # 5. OTHER CLEANING
     df.related.replace(2, 1, inplace=True) # category column 'related', replace '2' with '1'
-    
+
     return df
 
 
 def save_data(df, database_filepath):
+    """Save data: save data to SQLite database file
+
+    Parameters:
+    df (dataframe): cleaned dataframe loaded from clean_data() function
+    database_filepath (SQLite database .db): output SQLite database filepath
+
+    Output: SQLite database file saved to database_filepath
+
+   """
     # save the clean dataset into an sqlite database
     db = 'sqlite:///' + database_filepath
     engine = create_engine(db)
     df.to_sql('DisasterResponse', engine, index=False)
 
 def main():
+    """Run functions
+
+    """
     if len(sys.argv) == 4:
 
         messages_filepath, categories_filepath, database_filepath = sys.argv[1:]
