@@ -30,7 +30,16 @@ import pickle
 #2. LOAD DATA FROM DATABASE
 
 def load_data(database_filepath):
+    """Load data: load data from SQLite database file - output from process_data.py
 
+    Parameters:
+    database_filepath (SQLite database .db): SQLite database filepath
+
+    Returns:
+    X (list): list of messages
+    Y (dataframe): disaster categories dataframe
+    category_names (list): disaster category names
+    """
     # Load dataset from database with read_sql_table
     db = 'sqlite:///' + database_filepath
     engine = create_engine(db)
@@ -45,6 +54,14 @@ def load_data(database_filepath):
 # 3. WRITE A TOKENIZATION FUNCTION TO PROCESS YOUR TEXT DATA
 
 def tokenize(text):
+    """Tokenize text messages
+
+    Parameters:
+    Text (string): string of text
+
+    Returns:
+    clean_token
+    """
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
 
@@ -58,6 +75,12 @@ def tokenize(text):
 # 4. BUILD MACHINE LEARNING PIPELINE
 
 def build_model():
+    """Build model: enhanced Randon Forest Classifier ML model,
+    with GridSearchCV on vect__ngram_range & tfidf_use_idf parameters
+
+    Returns:
+    model: machine learning model
+    """
     # enhanced Random Forest Classifier ML model - ran GridSearchCV, found
     # best params for vect_ngram_range=(1,2) & tfidf_use_idf=False
 
@@ -79,7 +102,17 @@ def build_model():
 # 5. PRINT MODEL PERFORMANCE
 
 def evaluate_model(model, X_test, Y_test, category_names):
+    """Evaluate model: run evaluation for the output model from build_model() function
 
+    Parameters:
+    model: machine learning model output from build_model() function
+    X_test (list): test set of messages
+    Y_test (dataframe): test set of disaster categories of X_test
+    category_names (list): list of disaster category names
+
+    Returns:
+    Metrics from classification_report for the built model
+    """
     # predict on test data
     y_pred = model.predict(X_test)
 
@@ -94,7 +127,14 @@ def evaluate_model(model, X_test, Y_test, category_names):
 # 6. EXPORT TRAINED MODEL AS A PICKLE FILE
 
 def save_model(model, model_filepath):
+    """Save model to pickle file
 
+    Parameters:
+    model: machine learning model output from build_model() function
+    model_filepath: filepath to store the output pickle file
+
+    Returns: pickle file saved in specified model_filepath
+    """
     # save the model to disk
     model_pickle_file = model_filepath
     pickle.dump(model, open(model_pickle_file, 'wb'))
@@ -103,6 +143,10 @@ def save_model(model, model_filepath):
 
 
 def main():
+    """
+    Run functions
+    
+    """
     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
